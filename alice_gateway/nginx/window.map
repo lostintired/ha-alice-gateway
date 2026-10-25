@@ -11,3 +11,4 @@
 "~^GET /static/fonts/roboto/Roboto-Regular\.woff2$" 1;
 "~^GET /static/fonts/roboto/Roboto-Medium\.woff2$" 1;
 "~^GET /manifest\.json$" 1;
+"~^GET /static/translations/page-authorize/[A-Za-z]+(-[A-Za-z]+)*-[0-9a-f]{32}\.json$" 1;

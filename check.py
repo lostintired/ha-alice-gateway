@@ -66,6 +66,10 @@ FORBIDDEN = [
     ("GET", "/api/yandex_smart_home/v1.0/user/devices/query", {}),
     ("GET", "/api/yandex_smart_home/v1.0/user/devices/../../../states", {}),
 ]
+# Эти запросы до фильтра не доходят: роутер дома отвечает 400/405, облако Netcraze — своей страницей 404
+# (проверка 2026-10-25, журнал фильтра пуст).
+ROUTER_REFUSES = {("GET", "http://127.0.0.1/api/states"), ("TRACE", "/api/yandex_smart_home/v1.0/ping")}
+
 # (метод, путь). Должны дойти до HA.
 ALLOWED = [
     ("HEAD", "/api/yandex_smart_home/v1.0"),
@@ -84,8 +88,13 @@ WINDOW = [
     ("POST", "/auth/login_flow/0123456789abcdef0123456789abcdef"),
     ("GET", "/frontend_latest/app.abc123.js"),
     ("GET", "/manifest.json"),
+    ("GET", "/static/translations/page-authorize/ru-d03e6fdbf696e7a50b163153cd489d73.json"),
+    ("GET", "/static/translations/page-authorize/zh-Hans-0123456789abcdef0123456789abcdef.json"),
 ]
 WINDOW_STILL_FORBIDDEN = [
+    ("GET", "/static/translations/page-authorize/ru.json"),
+    ("GET", "/static/translations/page-onboarding/ru-d03e6fdbf696e7a50b163153cd489d73.json"),
+    ("GET", "/static/translations/ru-d03e6fdbf696e7a50b163153cd489d73.json"),
     ("GET", "/"),
     ("GET", "/api/states"),
     ("POST", "/auth/login_flow/../../api/states"),
@@ -260,17 +269,28 @@ def online(args):
     rep = Report()
     parts = urlsplit(args.url)
     host, port = parts.hostname, parts.port or 443
+    # --connect: адрес облака из публичного DNS. Изнутри дома имя ведёт на сам роутер, мимо облака.
+    addr = args.connect or host
+    print(f"соединение с {addr}:{port}, имя {host}")
 
     def ask(method, target, extra=None):
-        return raw_request(host, port, method, target, extra or {}, tls_name=host)
+        return raw_request(addr, port, method, target, extra or {}, tls_name=host)
 
     print("== запрещённое")
     for method, target, extra in FORBIDDEN:
         st, body = ask(method, target, extra)
-        rep.check(st == 403 and body == "", f"{method} {target} -> {st} len={len(body)}")
+        if (method, target) in ROUTER_REFUSES:
+            # Отказ роутера или облака, до фильтра; годится любой отказ без содержимого HA.
+            ok = (st in (400, 404, 405) and "Home Assistant" not in body
+                  and body.strip() != "404: Not Found" and not body.lstrip().startswith("{"))
+        else:
+            ok = st == 403 and body == ""
+        rep.check(ok, f"{method} {target} -> {st} len={len(body)}")
     print("== доходит до HA")
+    # До установки Yandex Smart Home (шаг 3) HA отвечает "404: Not Found" — запрос всё равно дошёл до HA.
     st, body = ask("GET", "/api/yandex_smart_home/v1.0/ping")
-    rep.check(st == 200, f"GET /api/yandex_smart_home/v1.0/ping -> {st} {body[:60]!r}")
+    rep.check(st == 200 or (st == 404 and body.startswith("404")),
+              f"GET /api/yandex_smart_home/v1.0/ping -> {st} {body[:60]!r}")
     st, body = ask("POST", "/auth/token")
     rep.check(st == 400 and body != "", f"POST /auth/token с мусором -> {st} {body[:60]!r}")
     return rep
@@ -304,6 +324,7 @@ def main():
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--offline", action="store_true")
     group.add_argument("--url")
+    parser.add_argument("--connect", help="с --url: IP-адрес, к которому подключаться (адрес облака)")
     args = parser.parse_args()
     rep = offline(args) if args.offline else online(args)
     print(f"\n{rep.total - rep.bad}/{rep.total} ok")
