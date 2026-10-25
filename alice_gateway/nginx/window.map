@@ -8,7 +8,6 @@
 "~^GET /frontend_es5/[A-Za-z0-9_.-]+$" 1;
 "~^GET /static/icons/favicon-192x192\.png$" 1;
 "~^GET /static/icons/favicon\.ico$" 1;
-"~^GET /static/fonts/roboto/Roboto-Regular\.woff2$" 1;
-"~^GET /static/fonts/roboto/Roboto-Medium\.woff2$" 1;
+"~^GET /static/fonts/roboto/Roboto-[A-Za-z]+\.woff2$" 1;
 "~^GET /manifest\.json$" 1;
 "~^GET /static/translations/page-authorize/[A-Za-z]+(-[A-Za-z]+)*-[0-9a-f]{32}\.json$" 1;

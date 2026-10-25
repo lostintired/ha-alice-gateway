@@ -88,11 +88,14 @@ WINDOW = [
     ("POST", "/auth/login_flow/0123456789abcdef0123456789abcdef"),
     ("GET", "/frontend_latest/app.abc123.js"),
     ("GET", "/manifest.json"),
+    ("GET", "/static/fonts/roboto/Roboto-Bold.woff2"),
     ("GET", "/static/translations/page-authorize/ru-d03e6fdbf696e7a50b163153cd489d73.json"),
     ("GET", "/static/translations/page-authorize/zh-Hans-0123456789abcdef0123456789abcdef.json"),
 ]
 WINDOW_STILL_FORBIDDEN = [
     ("GET", "/static/translations/page-authorize/ru.json"),
+    ("GET", "/static/fonts/roboto/Roboto-Bold.woff2.map"),
+    ("GET", "/static/fonts/Roboto-Bold.woff2"),
     ("GET", "/static/translations/page-onboarding/ru-d03e6fdbf696e7a50b163153cd489d73.json"),
     ("GET", "/static/translations/ru-d03e6fdbf696e7a50b163153cd489d73.json"),
     ("GET", "/"),
