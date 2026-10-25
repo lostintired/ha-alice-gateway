@@ -1,5 +1,5 @@
 name: Alice gateway
-version: "0.1.0"
+version: "0.2.0"
 slug: alice_gateway
 description: Allow-list nginx filter in front of Home Assistant for Yandex Smart Home
 url: https://github.com/lostintired/ha-alice-gateway
@@ -13,5 +13,13 @@ stdin: true
 watchdog: tcp://[HOST]:8090
 options:
   mode: probe
+  public_host: ""
+  linking_minutes: 15
+  extra_paths: []
 schema:
-  mode: list(probe)
+  mode: list(probe|gateway)
+  public_host: str?
+  linking_minutes: int(1,60)
+  extra_paths:
+    - path: str
+      methods: str

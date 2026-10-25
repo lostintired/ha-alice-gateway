@@ -1,0 +1,13 @@
+# Адреса окна привязки аккаунта Яндекса (решение 3 design.md). Подключается только при открытом окне.
+# Только "~" — с учётом регистра. Строка запроса здесь разрешена (у /auth/authorize она обязательна); путь сверяется так же строго.
+"~^GET /auth/authorize$" 1;
+"~^GET /auth/providers$" 1;
+"~^POST /auth/login_flow$" 1;
+"~^POST /auth/login_flow/[0-9a-f]{32}$" 1;
+"~^GET /frontend_latest/[A-Za-z0-9_.-]+$" 1;
+"~^GET /frontend_es5/[A-Za-z0-9_.-]+$" 1;
+"~^GET /static/icons/favicon-192x192\.png$" 1;
+"~^GET /static/icons/favicon\.ico$" 1;
+"~^GET /static/fonts/roboto/Roboto-Regular\.woff2$" 1;
+"~^GET /static/fonts/roboto/Roboto-Medium\.woff2$" 1;
+"~^GET /manifest\.json$" 1;

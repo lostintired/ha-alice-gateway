@@ -5,6 +5,7 @@ RUN apk add --no-cache nginx \
 
 COPY nginx/ /etc/alice-gateway/
 COPY run.sh /run.sh
-RUN chmod a+x /run.sh
+COPY extra_map.sh /etc/alice-gateway/extra_map.sh
+RUN chmod a+x /run.sh /etc/alice-gateway/extra_map.sh
 
 CMD ["/run.sh"]
