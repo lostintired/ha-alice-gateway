@@ -205,11 +205,11 @@ def offline(args):
             ok = st == 200 and (method == "HEAD" or f"uri={target} " in body)
             rep.check(ok, f"{method} {target} -> {st}")
         print("== заголовки для HA")
-        st, body = ask("GET", "/api/yandex_smart_home/v1.0/ping", {"X-Forwarded-For": "192.168.1.120, 1.2.3.4"})
+        st, body = ask("GET", "/api/yandex_smart_home/v1.0/ping", {"X-Forwarded-For": "192.168.0.10, 1.2.3.4"})
         rep.check(f"host={PUBLIC} " in body, f"Host = публичное имя: {body}")
         rep.check(" xff=203.0.113.7 " in body, "X-Forwarded-For = адрес клиента, XFF клиента выброшен")
         rep.check(" xfp=https " in body and " xri= " in body, "X-Forwarded-Proto https, X-Real-IP не уходит в HA")
-        for private in ("192.168.1.120", "10.1.2.3", "172.20.0.5", "127.0.0.1", "fdfe:fe58:e113::1", "fe80::1", "::1"):
+        for private in ("192.168.0.10", "10.1.2.3", "172.20.0.5", "127.0.0.1", "fd00::1", "fe80::1", "::1"):
             st, body = ask("GET", "/api/yandex_smart_home/v1.0/ping", {"X-Real-IP": private})
             rep.check(" xff=198.51.100.1 " in body, f"частный {private} -> заглушка")
         print("== схема и источник")
@@ -290,9 +290,9 @@ def online(args):
             ok = st == 403 and body == ""
         rep.check(ok, f"{method} {target} -> {st} len={len(body)}")
     print("== доходит до HA")
-    # До установки Yandex Smart Home (шаг 3) HA отвечает "404: Not Found" — запрос всё равно дошёл до HA.
+    # Отвечает Yandex Smart Home; без его интеграции в HA тут 404 — это провал.
     st, body = ask("GET", "/api/yandex_smart_home/v1.0/ping")
-    rep.check(st == 200 or (st == 404 and body.startswith("404")),
+    rep.check(st == 200 and body == "Yandex Smart Home",
               f"GET /api/yandex_smart_home/v1.0/ping -> {st} {body[:60]!r}")
     st, body = ask("POST", "/auth/token")
     rep.check(st == 400 and body != "", f"POST /auth/token с мусором -> {st} {body[:60]!r}")
